@@ -17,6 +17,7 @@
     "node": ">=18"
   },
   "dependencies": {
+    "lucide-react": "^0.462.0",
     "sca": "file:"
   }
 }
