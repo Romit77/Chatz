@@ -1,4 +1,19 @@
 import { Server } from "socket.io";
+import Redis from "ioredis";
+
+const pub = new Redis({
+  host: "sca-post-db.e.aivencloud.com",
+  port: 10812,
+  username: "default",
+  password: "AVNS_pAop0FBdegCBjqDNd_Z",
+});
+
+const sub = new Redis({
+  host: "sca-post-db.e.aivencloud.com",
+  port: 10812,
+  username: "default",
+  password: "AVNS_pAop0FBdegCBjqDNd_Z",
+});
 
 class SocketService {
   private _io: Server;
@@ -10,6 +25,7 @@ class SocketService {
         origin: "*",
       },
     });
+    sub.subscribe("MESSAGES");
   }
 
   public initListeners() {
@@ -17,10 +33,16 @@ class SocketService {
     const io = this.io;
     io.on("connect", (socket) => {
       console.log("new socket connected", socket.id);
-
-      socket.on("event: message", async ({ message }: { message: string }) => {
+      socket.on("event:message", async ({ message }: { message: string }) => {
         console.log("new msg receiveed", message);
+        await pub.publish("MESSAGES", JSON.stringify({ message }));
       });
+    });
+
+    sub.on("message", (channel, message) => {
+      if (channel === "MESSAGES") {
+        io.emit("message", message);
+      }
     });
   }
 
