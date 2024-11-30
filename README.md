@@ -1,81 +1,84 @@
-# Turborepo starter
+# Scalable Chat App with Redis Pub/Sub and Socket.IO
 
-This is an official starter Turborepo.
+This project is a scalable chat application built with Redis Pub/Sub and Socket.IO. It addresses the challenge of scaling real-time communication by enabling multiple servers to share messages seamlessly using Redis as a message broker.
 
-## Using this example
+## Problem Statement
 
-Run the following command:
+In a typical chat application:
 
-```sh
-npx create-turbo@latest
-```
+1. **Single Server Scenario**: 
+   - Users connect to a single server.
+   - Messages are exchanged effortlessly.
+   
+2. **Multi-Server Scenario**: 
+   - When the user base grows, new servers are added to distribute the load.
+   - Users connected to different servers cannot communicate, breaking the real-time chat experience.
 
-## What's inside?
+![image](https://github.com/user-attachments/assets/e705ccff-5902-474b-9c46-e11d8cd8b4dc)
 
-This Turborepo includes the following packages/apps:
 
-### Apps and Packages
+### The Challenge:
+How can users on different servers exchange messages seamlessly?
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+## Solution: Redis Pub/Sub Architecture
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+To solve this, we introduce **Redis Pub/Sub** as a message broker:
 
-### Utilities
+- **Redis Pub/Sub** allows servers to publish and subscribe to messages on specific channels.
+- Each chat server subscribes to a common Redis channel.
+- When a user sends a message:
+  1. The server publishes the message to the Redis channel.
+  2. Redis broadcasts the message to all subscribed servers.
+  3. Each server relays the message to its connected users.
 
-This Turborepo has some additional tools already setup for you:
+### Key Components
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+1. **Socket.IO**:
+   - Enables real-time, bi-directional communication between the server and clients.
 
-### Build
+2. **Redis Pub/Sub**:
+   - Acts as a message broker to sync messages across multiple servers.
 
-To build all apps and packages, run the following command:
+3. **Server Instances**:
+   - Multiple server instances can handle different users but remain in sync through Redis.
 
-```
-cd my-turborepo
-pnpm build
-```
+## How It Works
 
-### Develop
+1. **User sends a message**:
+   - The connected server publishes the message to a Redis channel.
+   
+2. **Redis distributes the message**:
+   - All subscribed servers receive the message.
 
-To develop all apps and packages, run the following command:
+3. **Server broadcasts to clients**:
+   - Each server broadcasts the received message to its connected users via Socket.IO.
 
-```
-cd my-turborepo
-pnpm dev
-```
+![image](https://github.com/user-attachments/assets/d0008f86-3aa7-4a9f-83e1-bb42a5d44616)
 
-### Remote Caching
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+### Example Flow
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
+1. **User 1** connects to **Server 1** and sends a message: "Hello!"
+2. **User 4** connects to **Server 2**.
+3. **Server 1** publishes the message "Hello!" to the Redis channel.
+4. **Server 2** receives the message from Redis and broadcasts it to **User 4**.
+5. Both **User 1** and **User 4** see the message "Hello!" in real-time.
 
-```
-cd my-turborepo
-npx turbo login
-```
+## Benefits
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+- **Scalability**: 
+  - Add more servers as user traffic grows.
+  
+- **Seamless Communication**: 
+  - Users on different servers can communicate without issue.
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+- **Fault Tolerance**: 
+  - If one server fails, others continue operating independently.
 
-```
-npx turbo link
-```
+## Getting Started
 
-## Useful Links
+### Prerequisites
 
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+- [Node.js](https://nodejs.org/)
+- [Redis](https://redis.io/)
+  
