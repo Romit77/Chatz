@@ -2,17 +2,17 @@ import { Server } from "socket.io";
 import Redis from "ioredis";
 
 const pub = new Redis({
-  host: "sca-post-db.e.aivencloud.com",
+  host: process.env.REDIS_HOST,
   port: 10812,
   username: "default",
-  password: "AVNS_pAop0FBdegCBjqDNd_Z",
+  password: process.env.REDIS_PASSWORD,
 });
 
 const sub = new Redis({
-  host: "sca-post-db.e.aivencloud.com",
+  host: process.env.REDIS_HOST,
   port: 10812,
   username: "default",
-  password: "AVNS_pAop0FBdegCBjqDNd_Z",
+  password: process.env.REDIS_PASSWORD,
 });
 
 class SocketService {
